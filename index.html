@@ -279,6 +279,76 @@
       font-weight: 600;
     }
 
+    .chromebook-card {
+      height: 100%;
+      min-height: 180px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .chromebook-cycle {
+      flex: 1;
+      width: 100%;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--primary);
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+    }
+
+    .chromebook-cycle:focus-visible,
+    .music-toggle:focus-visible {
+      outline: none;
+      box-shadow: var(--focus);
+      border-radius: 10px;
+    }
+
+    .music-toggle {
+      width: 100%;
+      border: 2px solid var(--primary);
+      border-radius: 9px;
+      background: var(--surface);
+      color: var(--primary);
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition:
+        background 0.12s ease,
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+    }
+
+    .music-toggle:hover {
+      background: #fffdf0;
+    }
+
+    .music-toggle.active {
+      background: var(--accent);
+    }
+
+    .music-toggle-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .music-toggle-icon .icon {
+      width: 20px;
+      height: 20px;
+    }
+
     .icon {
       display: inline-block;
       stroke: currentColor;
@@ -318,7 +388,8 @@
 
       .card-shell,
       .expectation-card,
-      .participation-card {
+      .participation-card,
+      .chromebook-card {
         min-height: 0;
       }
 
@@ -445,20 +516,32 @@
       </div>
 
       <div class="card-shell">
-        <button
-          class="expectation-card"
-          type="button"
-          data-category="chromebook"
-          aria-label="Chromebooks and technology expectation. Click to cycle."
-        >
-          <div class="card-heading">
-            <div class="letter-badge" aria-hidden="true">C</div>
-            <div class="category-name">Chromebooks / Technology</div>
-          </div>
+        <div class="chromebook-card">
+          <button
+            class="chromebook-cycle"
+            type="button"
+            data-category="chromebook"
+            aria-label="Chromebooks and technology expectation. Click to cycle."
+          >
+            <div class="card-heading">
+              <div class="letter-badge" aria-hidden="true">C</div>
+              <div class="category-name">Chromebooks / Technology</div>
+            </div>
 
-          <div class="expectation-display" id="chromebook-display"></div>
-          <div class="cycle-hint">Click to change expectation</div>
-        </button>
+            <div class="expectation-display" id="chromebook-display"></div>
+            <div class="cycle-hint">Click to change expectation</div>
+          </button>
+
+          <button
+            class="music-toggle"
+            type="button"
+            id="music-toggle"
+            aria-pressed="false"
+          >
+            <span class="music-toggle-icon" id="music-toggle-icon"></span>
+            <span id="music-toggle-label">Music: Not Allowed</span>
+          </button>
+        </div>
       </div>
     </section>
   </main>
@@ -495,9 +578,10 @@
       ],
 
       chromebook: [
-        { label: "No Chromebook", icon: "laptop-x" },
-        { label: "Chromebook w/ music", icon: "headphones" },
-        { label: "Chromebook w/o music", icon: "laptop" }
+        { label: "0 – Closed", icon: "laptop-x" },
+        { label: "1 – Assigned task / site only", icon: "laptop" },
+        { label: "2 – Classwork + approved resources", icon: "book" },
+        { label: "3 – Teacher-directed use", icon: "board" }
       ],
 
       participation: [
@@ -514,6 +598,7 @@
       activity: 0,
       movement: 0,
       chromebook: 0,
+      chromebookMusic: false,
       participation: {
         Reading: false,
         Writing: false,
@@ -536,6 +621,7 @@
         activity: 3,
         movement: 0,
         chromebook: 0,
+        chromebookMusic: false,
         participation: {
           Reading: false,
           Writing: true,
@@ -549,7 +635,8 @@
         help: 2,
         activity: 0,
         movement: 1,
-        chromebook: 2,
+        chromebook: 1,
+        chromebookMusic: false,
         participation: {
           Reading: true,
           Writing: true,
@@ -563,7 +650,8 @@
         help: 1,
         activity: 1,
         movement: 1,
-        chromebook: 2,
+        chromebook: 1,
+        chromebookMusic: false,
         participation: {
           Reading: false,
           Writing: true,
@@ -577,7 +665,8 @@
         help: 1,
         activity: 2,
         movement: 2,
-        chromebook: 2,
+        chromebook: 1,
+        chromebookMusic: false,
         participation: {
           Reading: false,
           Writing: true,
@@ -630,6 +719,8 @@
           }
         }
       );
+
+      clean.chromebookMusic = candidate?.chromebookMusic === true;
 
       expectations.participation.forEach(item => {
         clean.participation[item.key] =
@@ -796,13 +887,15 @@
       `;
 
       const button = document.querySelector(
-        `.expectation-card[data-category="${category}"]`
+        `[data-category="${category}"]`
       );
 
-      button.setAttribute(
-        "aria-label",
-        `${categoryLabel(category)} expectation: ${item.label}. Click to cycle.`
-      );
+      if (button) {
+        button.setAttribute(
+          "aria-label",
+          `${categoryLabel(category)} expectation: ${item.label}. Click to cycle.`
+        );
+      }
     }
 
     function renderParticipation() {
@@ -827,12 +920,33 @@
         .join("");
     }
 
+
+    function renderChromebookMusic() {
+      const button = document.getElementById("music-toggle");
+      const label = document.getElementById("music-toggle-label");
+      const iconHolder = document.getElementById("music-toggle-icon");
+
+      if (!button || !label || !iconHolder) return;
+
+      button.classList.toggle("active", state.chromebookMusic);
+      button.setAttribute("aria-pressed", String(state.chromebookMusic));
+
+      label.textContent = state.chromebookMusic
+        ? "Music: Allowed"
+        : "Music: Not Allowed";
+
+      iconHolder.innerHTML = icon(
+        state.chromebookMusic ? "headphones" : "volume-x"
+      );
+    }
+
     function renderAll() {
       ["conversation", "help", "activity", "movement", "chromebook"].forEach(
         renderExpectation
       );
 
       renderParticipation();
+      renderChromebookMusic();
       saveState();
     }
 
@@ -845,6 +959,11 @@
 
     function toggleParticipation(key) {
       state.participation[key] = !state.participation[key];
+      renderAll();
+    }
+
+    function toggleChromebookMusic() {
+      state.chromebookMusic = !state.chromebookMusic;
       renderAll();
     }
 
@@ -873,10 +992,17 @@
     }
 
     document.addEventListener("click", event => {
-      const expectationButton = event.target.closest(".expectation-card");
+      const expectationButton = event.target.closest(
+        ".expectation-card, .chromebook-cycle"
+      );
 
       if (expectationButton) {
         cycle(expectationButton.dataset.category);
+        return;
+      }
+
+      if (event.target.closest("#music-toggle")) {
+        toggleChromebookMusic();
         return;
       }
 
