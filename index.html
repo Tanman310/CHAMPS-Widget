@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHAMP-C Classroom Expectations</title>
+
+  <style>
+    :root {
+      --primary: #112145;
+      --accent: #f5db1c;
+      --background: #f7f7f7;
+      --surface: #ffffff;
+      --text: #112145;
+      --muted: #5f6675;
+      --border: rgba(17, 33, 69, 0.18);
+      --shadow: 0 4px 14px rgba(17, 33, 69, 0.10);
+      --radius: 14px;
+      --focus: 0 0 0 4px rgba(245, 219, 28, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--background);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      padding: 16px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .widget {
+      width: min(100%, 1200px);
+      margin: 0 auto;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .title-block {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(1.3rem, 2.5vw, 2rem);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .preset-btn,
+    .reset-btn {
+      border: 2px solid var(--primary);
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition:
+        transform 0.12s ease,
+        background 0.12s ease,
+        color 0.12s ease,
+        box-shadow 0.12s ease;
+    }
+
+    .preset-btn {
+      background: var(--surface);
+      color: var(--primary);
+    }
+
+    .preset-btn:hover,
+    .preset-btn:focus-visible {
+      background: var(--accent);
+    }
+
+    .reset-btn {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .reset-btn:hover,
+    .reset-btn:focus-visible {
+      background: #1b3263;
+    }
+
+    .preset-btn:active,
+    .reset-btn:active,
+    .expectation-card:active,
+    .participation-btn:active {
+      transform: translateY(1px);
+    }
+
+    .preset-btn:focus-visible,
+    .reset-btn:focus-visible,
+    .expectation-card:focus-visible,
+    .participation-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--focus);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card-shell {
+      min-width: 0;
+      min-height: 180px;
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .expectation-card {
+      width: 100%;
+      height: 100%;
+      min-height: 180px;
+      border: 0;
+      background: var(--surface);
+      color: var(--primary);
+      padding: 16px;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      transition:
+        background 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.12s ease;
+    }
+
+    .expectation-card:hover {
+      background: #fffdf0;
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .letter-badge {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .category-name {
+      min-width: 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .expectation-display {
+      flex: 1;
+      min-width: 0;
+      background: var(--accent);
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .expectation-display .icon {
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+    }
+
+    .cycle-hint {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .participation-card {
+      height: 100%;
+      min-height: 180px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .participation-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .participation-btn {
+      border: 2px solid var(--primary);
+      border-radius: 9px;
+      background: var(--surface);
+      color: var(--primary);
+      padding: 10px;
+      cursor: pointer;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition:
+        background 0.12s ease,
+        color 0.12s ease,
+        transform 0.12s ease;
+    }
+
+    .participation-btn:hover {
+      background: #fffdf0;
+    }
+
+    .participation-btn.active {
+      background: var(--accent);
+      color: var(--primary);
+    }
+
+    .participation-btn .icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .participation-note {
+      margin-top: auto;
+      padding-top: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .icon {
+      display: inline-block;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    @media (max-width: 850px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 10px;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .controls {
+        width: 100%;
+      }
+
+      .preset-btn,
+      .reset-btn {
+        flex: 1 1 auto;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-shell,
+      .expectation-card,
+      .participation-card {
+        min-height: 0;
+      }
+
+      .participation-list {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="widget" aria-labelledby="widget-title">
+    <div class="toolbar">
+      <div class="title-block">
+        <h1 class="title" id="widget-title">CHAMP-C</h1>
+        <span class="subtitle">Classroom Expectations</span>
+      </div>
+
+      <div class="controls" aria-label="Expectation presets">
+        <button class="preset-btn" type="button" data-preset="direct">
+          Direct Instruction
+        </button>
+        <button class="preset-btn" type="button" data-preset="independent">
+          Independent
+        </button>
+        <button class="preset-btn" type="button" data-preset="partners">
+          Partners
+        </button>
+        <button class="preset-btn" type="button" data-preset="groups">
+          Groups
+        </button>
+        <button class="reset-btn" type="button" id="reset-btn">
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <section class="grid" aria-label="CHAMP-C expectations">
+      <div class="card-shell">
+        <button
+          class="expectation-card"
+          type="button"
+          data-category="conversation"
+          aria-label="Conversation expectation. Click to cycle."
+        >
+          <div class="card-heading">
+            <div class="letter-badge" aria-hidden="true">C</div>
+            <div class="category-name">Conversation</div>
+          </div>
+
+          <div class="expectation-display" id="conversation-display"></div>
+          <div class="cycle-hint">Click to change expectation</div>
+        </button>
+      </div>
+
+      <div class="card-shell">
+        <button
+          class="expectation-card"
+          type="button"
+          data-category="help"
+          aria-label="Help expectation. Click to cycle."
+        >
+          <div class="card-heading">
+            <div class="letter-badge" aria-hidden="true">H</div>
+            <div class="category-name">Help</div>
+          </div>
+
+          <div class="expectation-display" id="help-display"></div>
+          <div class="cycle-hint">Click to change expectation</div>
+        </button>
+      </div>
+
+      <div class="card-shell">
+        <button
+          class="expectation-card"
+          type="button"
+          data-category="activity"
+          aria-label="Activity expectation. Click to cycle."
+        >
+          <div class="card-heading">
+            <div class="letter-badge" aria-hidden="true">A</div>
+            <div class="category-name">Activity</div>
+          </div>
+
+          <div class="expectation-display" id="activity-display"></div>
+          <div class="cycle-hint">Click to change expectation</div>
+        </button>
+      </div>
+
+      <div class="card-shell">
+        <button
+          class="expectation-card"
+          type="button"
+          data-category="movement"
+          aria-label="Movement expectation. Click to cycle."
+        >
+          <div class="card-heading">
+            <div class="letter-badge" aria-hidden="true">M</div>
+            <div class="category-name">Movement</div>
+          </div>
+
+          <div class="expectation-display" id="movement-display"></div>
+          <div class="cycle-hint">Click to change expectation</div>
+        </button>
+      </div>
+
+      <div class="card-shell">
+        <div class="participation-card">
+          <div class="card-heading">
+            <div class="letter-badge" aria-hidden="true">P</div>
+            <div class="category-name">Participation</div>
+          </div>
+
+          <div
+            class="participation-list"
+            id="participation-list"
+            aria-label="Participation expectations"
+          ></div>
+
+          <div class="participation-note">
+            Select all that apply
+          </div>
+        </div>
+      </div>
+
+      <div class="card-shell">
+        <button
+          class="expectation-card"
+          type="button"
+          data-category="chromebook"
+          aria-label="Chromebooks and technology expectation. Click to cycle."
+        >
+          <div class="card-heading">
+            <div class="letter-badge" aria-hidden="true">C</div>
+            <div class="category-name">Chromebooks / Technology</div>
+          </div>
+
+          <div class="expectation-display" id="chromebook-display"></div>
+          <div class="cycle-hint">Click to change expectation</div>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "champ-c-state-v1";
+
+    const expectations = {
+      conversation: [
+        { label: "0 – No talking", icon: "volume-x" },
+        { label: "0.5 – Whisper", icon: "volume-off" },
+        { label: "1 – Quiet voice", icon: "volume-low" },
+        { label: "2 – Regular voice", icon: "volume-high" }
+      ],
+
+      help: [
+        { label: "Raise hand", icon: "hand" },
+        { label: "Ask a partner", icon: "users" },
+        { label: "Refer to materials", icon: "book" }
+      ],
+
+      activity: [
+        { label: "Independent", icon: "user" },
+        { label: "Partner", icon: "users" },
+        { label: "Group", icon: "group" },
+        { label: "Whole class", icon: "board" }
+      ],
+
+      movement: [
+        { label: "Remain seated", icon: "chair" },
+        { label: "Limited w/ permission", icon: "walk" },
+        { label: "Limited w/o permission", icon: "walk-fast" },
+        { label: "Unrestricted", icon: "move" }
+      ],
+
+      chromebook: [
+        { label: "No Chromebook", icon: "laptop-x" },
+        { label: "Chromebook w/ music", icon: "headphones" },
+        { label: "Chromebook w/o music", icon: "laptop" }
+      ],
+
+      participation: [
+        { key: "Reading", label: "Reading", icon: "book" },
+        { key: "Writing", label: "Writing", icon: "pencil" },
+        { key: "Listening", label: "Listening", icon: "ear" },
+        { key: "Typing", label: "Typing", icon: "keyboard" }
+      ]
+    };
+
+    const defaultState = {
+      conversation: 0,
+      help: 0,
+      activity: 0,
+      movement: 0,
+      chromebook: 0,
+      participation: {
+        Reading: false,
+        Writing: false,
+        Listening: false,
+        Typing: false
+      }
+    };
+
+    let state = loadState();
+
+    /*
+      Preset mappings can be edited here without changing the rest
+      of the widget. Each numbered category uses the zero-based
+      position of the matching expectation in the lists above.
+    */
+    const presets = {
+      direct: {
+        conversation: 0,
+        help: 0,
+        activity: 3,
+        movement: 0,
+        chromebook: 0,
+        participation: {
+          Reading: false,
+          Writing: true,
+          Listening: true,
+          Typing: false
+        }
+      },
+
+      independent: {
+        conversation: 0,
+        help: 2,
+        activity: 0,
+        movement: 1,
+        chromebook: 2,
+        participation: {
+          Reading: true,
+          Writing: true,
+          Listening: false,
+          Typing: true
+        }
+      },
+
+      partners: {
+        conversation: 2,
+        help: 1,
+        activity: 1,
+        movement: 1,
+        chromebook: 2,
+        participation: {
+          Reading: false,
+          Writing: true,
+          Listening: true,
+          Typing: true
+        }
+      },
+
+      groups: {
+        conversation: 3,
+        help: 1,
+        activity: 2,
+        movement: 2,
+        chromebook: 2,
+        participation: {
+          Reading: false,
+          Writing: true,
+          Listening: true,
+          Typing: true
+        }
+      }
+    };
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (!saved) {
+          return clone(defaultState);
+        }
+
+        const parsed = JSON.parse(saved);
+        return sanitizeState(parsed);
+      } catch (error) {
+        return clone(defaultState);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        // The widget still works if embedded storage is unavailable.
+      }
+    }
+
+    function sanitizeState(candidate) {
+      const clean = clone(defaultState);
+
+      ["conversation", "help", "activity", "movement", "chromebook"].forEach(
+        category => {
+          const value = candidate?.[category];
+
+          if (
+            Number.isInteger(value) &&
+            value >= 0 &&
+            value < expectations[category].length
+          ) {
+            clean[category] = value;
+          }
+        }
+      );
+
+      expectations.participation.forEach(item => {
+        clean.participation[item.key] =
+          candidate?.participation?.[item.key] === true;
+      });
+
+      return clean;
+    }
+
+    function icon(name) {
+      const icons = {
+        "volume-x": `
+          <path d="M11 5 6 9H3v6h3l5 4V5Z"></path>
+          <path d="m19 9-6 6"></path>
+          <path d="m13 9 6 6"></path>
+        `,
+
+        "volume-off": `
+          <path d="M11 5 6 9H3v6h3l5 4V5Z"></path>
+        `,
+
+        "volume-low": `
+          <path d="M11 5 6 9H3v6h3l5 4V5Z"></path>
+          <path d="M15 9.5a4 4 0 0 1 0 5"></path>
+        `,
+
+        "volume-high": `
+          <path d="M11 5 6 9H3v6h3l5 4V5Z"></path>
+          <path d="M15 9.5a4 4 0 0 1 0 5"></path>
+          <path d="M18 7a8 8 0 0 1 0 10"></path>
+        `,
+
+        "hand": `
+          <path d="M8 11V5a1.5 1.5 0 0 1 3 0v5"></path>
+          <path d="M11 10V4a1.5 1.5 0 0 1 3 0v6"></path>
+          <path d="M14 10V5a1.5 1.5 0 0 1 3 0v7"></path>
+          <path d="M17 11V8a1.5 1.5 0 0 1 3 0v5c0 5-3 8-7 8h-1c-2.2 0-4.1-1-5.4-2.8L3.5 14a1.6 1.6 0 0 1 2.5-2l2 2"></path>
+        `,
+
+        "users": `
+          <circle cx="9" cy="8" r="3"></circle>
+          <path d="M3 20c0-4 2.5-6 6-6s6 2 6 6"></path>
+          <circle cx="17" cy="9" r="2.5"></circle>
+          <path d="M15 15c3.5 0 6 1.5 6 5"></path>
+        `,
+
+        "group": `
+          <circle cx="12" cy="7" r="3"></circle>
+          <circle cx="5.5" cy="10" r="2"></circle>
+          <circle cx="18.5" cy="10" r="2"></circle>
+          <path d="M6 21c0-4 2.5-7 6-7s6 3 6 7"></path>
+          <path d="M1.5 20c0-3 1.5-5 4-5"></path>
+          <path d="M22.5 20c0-3-1.5-5-4-5"></path>
+        `,
+
+        "book": `
+          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"></path>
+          <path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5A2.5 2.5 0 0 1 20 21.5v-16Z"></path>
+        `,
+
+        "user": `
+          <circle cx="12" cy="8" r="4"></circle>
+          <path d="M4 21c0-4.5 3-7 8-7s8 2.5 8 7"></path>
+        `,
+
+        "board": `
+          <rect x="3" y="4" width="18" height="12" rx="1.5"></rect>
+          <path d="M8 20h8"></path>
+          <path d="M12 16v4"></path>
+          <circle cx="8" cy="9" r="1.5"></circle>
+          <path d="M6 13c.5-1.5 1.3-2.2 2-2.2S9.5 11.5 10 13"></path>
+        `,
+
+        "chair": `
+          <path d="M7 12h10v5H7z"></path>
+          <path d="M8 12V7a4 4 0 0 1 8 0v5"></path>
+          <path d="M8 17v4"></path>
+          <path d="M16 17v4"></path>
+        `,
+
+        "walk": `
+          <circle cx="12" cy="4.5" r="2"></circle>
+          <path d="m10 8 4 2 2 4"></path>
+          <path d="m10 8-2 5 3 3"></path>
+          <path d="m11 16-2 5"></path>
+          <path d="m14 10-1 6 4 5"></path>
+        `,
+
+        "walk-fast": `
+          <path d="M3 8h4"></path>
+          <path d="M2 12h5"></path>
+          <circle cx="14" cy="4.5" r="2"></circle>
+          <path d="m12 8 4 2 2 4"></path>
+          <path d="m12 8-2 5 3 3"></path>
+          <path d="m13 16-2 5"></path>
+          <path d="m16 10-1 6 4 5"></path>
+        `,
+
+        "move": `
+          <path d="M12 2v20"></path>
+          <path d="m8 6 4-4 4 4"></path>
+          <path d="m8 18 4 4 4-4"></path>
+          <path d="M2 12h20"></path>
+          <path d="m6 8-4 4 4 4"></path>
+          <path d="m18 8 4 4-4 4"></path>
+        `,
+
+        "laptop-x": `
+          <rect x="4" y="4" width="16" height="11" rx="1.5"></rect>
+          <path d="M2 19h20"></path>
+          <path d="m9 7 6 5"></path>
+          <path d="m15 7-6 5"></path>
+        `,
+
+        "headphones": `
+          <path d="M4 13v-2a8 8 0 0 1 16 0v2"></path>
+          <path d="M4 13h3v7H5a1 1 0 0 1-1-1v-6Z"></path>
+          <path d="M20 13h-3v7h2a1 1 0 0 0 1-1v-6Z"></path>
+        `,
+
+        "laptop": `
+          <rect x="4" y="4" width="16" height="11" rx="1.5"></rect>
+          <path d="M2 19h20"></path>
+        `,
+
+        "pencil": `
+          <path d="m4 20 4.5-1 10-10-3.5-3.5-10 10L4 20Z"></path>
+          <path d="m13.5 7 3.5 3.5"></path>
+        `,
+
+        "ear": `
+          <path d="M7 10a5 5 0 1 1 9 3c-2 2-2 3-2 4.5A2.5 2.5 0 0 1 9 18"></path>
+          <path d="M10 10a2 2 0 1 1 3 1.7"></path>
+        `,
+
+        "keyboard": `
+          <rect x="3" y="6" width="18" height="12" rx="2"></rect>
+          <path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01"></path>
+          <path d="M6 14h2M10 14h8"></path>
+        `
+      };
+
+      const paths = icons[name] || icons["user"];
+
+      return `
+        <svg
+          class="icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          ${paths}
+        </svg>
+      `;
+    }
+
+    function renderExpectation(category) {
+      const item = expectations[category][state[category]];
+      const display = document.getElementById(`${category}-display`);
+
+      display.innerHTML = `
+        ${icon(item.icon)}
+        <span>${item.label}</span>
+      `;
+
+      const button = document.querySelector(
+        `.expectation-card[data-category="${category}"]`
+      );
+
+      button.setAttribute(
+        "aria-label",
+        `${categoryLabel(category)} expectation: ${item.label}. Click to cycle.`
+      );
+    }
+
+    function renderParticipation() {
+      const container = document.getElementById("participation-list");
+
+      container.innerHTML = expectations.participation
+        .map(item => {
+          const isActive = state.participation[item.key];
+
+          return `
+            <button
+              class="participation-btn${isActive ? " active" : ""}"
+              type="button"
+              data-participation="${item.key}"
+              aria-pressed="${isActive}"
+            >
+              ${icon(item.icon)}
+              <span>${item.label}</span>
+            </button>
+          `;
+        })
+        .join("");
+    }
+
+    function renderAll() {
+      ["conversation", "help", "activity", "movement", "chromebook"].forEach(
+        renderExpectation
+      );
+
+      renderParticipation();
+      saveState();
+    }
+
+    function cycle(category) {
+      state[category] =
+        (state[category] + 1) % expectations[category].length;
+
+      renderAll();
+    }
+
+    function toggleParticipation(key) {
+      state.participation[key] = !state.participation[key];
+      renderAll();
+    }
+
+    function applyPreset(name) {
+      if (!presets[name]) return;
+
+      state = clone(presets[name]);
+      renderAll();
+    }
+
+    function resetWidget() {
+      state = clone(defaultState);
+      renderAll();
+    }
+
+    function categoryLabel(category) {
+      const labels = {
+        conversation: "Conversation",
+        help: "Help",
+        activity: "Activity",
+        movement: "Movement",
+        chromebook: "Chromebooks and technology"
+      };
+
+      return labels[category] || category;
+    }
+
+    document.addEventListener("click", event => {
+      const expectationButton = event.target.closest(".expectation-card");
+
+      if (expectationButton) {
+        cycle(expectationButton.dataset.category);
+        return;
+      }
+
+      const participationButton = event.target.closest(".participation-btn");
+
+      if (participationButton) {
+        toggleParticipation(participationButton.dataset.participation);
+        return;
+      }
+
+      const presetButton = event.target.closest(".preset-btn");
+
+      if (presetButton) {
+        applyPreset(presetButton.dataset.preset);
+        return;
+      }
+
+      if (event.target.closest("#reset-btn")) {
+        resetWidget();
+      }
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
